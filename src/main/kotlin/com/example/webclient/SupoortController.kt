@@ -27,4 +27,19 @@ class SupoortController {
     fun throw5xx(): ResponseEntity<String> {
         return ResponseEntity.internalServerError().body("")
     }
+
+    var count = 0
+
+    @RequestMapping("/retry")
+    fun retry(): ResponseEntity<String> {
+        logger.info { "RETRY!" }
+        count++
+
+        if (count % 3 == 0) {
+            logger.info { "SUCCESS" }
+            return ResponseEntity.ok("GOOD")
+        }
+
+        return ResponseEntity.badRequest().body("")
+    }
 }

@@ -6,6 +6,8 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.reactive.function.client.WebClient
 import reactor.core.publisher.Mono
+import reactor.util.retry.Retry
+import java.time.Duration
 import java.time.LocalDateTime
 
 private val logger = KotlinLogging.logger {}
@@ -98,5 +100,23 @@ class WebClientController(
         logger.info { "$${error.block()}"}
 
         return "END-EXCHANGE"
+    }
+
+    @RequestMapping("/mono-async-retry")
+    fun monoAsyncRetry(): String {
+        val mono = webClient.get()
+            .uri("http://localhost:8080/retry")
+            .retrieve()
+            .bodyToMono(String::class.java)
+            .retry(3)
+
+
+        logger.info {"END REQUEST"}
+
+        mono.subscribe {
+            logger.info {"RECV $it"}
+        }
+
+        return "END-MONO-Sync ${LocalDateTime.now()}"
     }
 }
